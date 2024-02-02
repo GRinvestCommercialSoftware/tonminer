@@ -86,6 +86,7 @@ let bestGiver = { address: '', coins: 0 };
 function updateBestGivers(liteClient, myAddress) {
     return __awaiter(this, void 0, void 0, function* () {
         const giver = givers[Math.floor(Math.random() * givers.length)];
+        console.log('GPU '+ gpu + ' Giver: '+ giver.address);
         bestGiver = {
             address: giver.address,
             coins: giver.reward,
