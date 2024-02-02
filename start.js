@@ -1,9 +1,10 @@
 const { spawn } = require('child_process');
 const { spawnSync } = require('child_process');
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ path: '.env.txt' });
-dotenv_1.default.config();
-dotenv_1.default.config({ path: 'config.txt' });
+import dotenv from "dotenv";
+dotenv.config({ path: 'config.txt.txt' });
+dotenv.config({ path: '.env.txt' });
+dotenv.config();
+dotenv.config({ path: 'config.txt' });
 const nvidiaSmiCommand = 'nvidia-smi --list-gpus';
 const result = spawnSync(nvidiaSmiCommand, { shell: true });
 
