@@ -22,6 +22,7 @@ const child_process_1 = require("child_process");
 const fs_1 = __importDefault(require("fs"));
 const ton_2 = require("@ton/ton");
 const dotenv_1 = __importDefault(require("dotenv"));
+const givers_1 = require("./givers");
 const arg_1 = __importDefault(require("arg"));
 const ton_lite_client_1 = require("ton-lite-client");
 const client_1 = require("./client");
@@ -31,7 +32,7 @@ dotenv_1.default.config({ path: '.env.txt' });
 dotenv_1.default.config();
 dotenv_1.default.config({ path: 'config.txt' });
 const args = (0, arg_1.default)({
-    '--givers': String, // 100 1000 10000
+    '--givers': Number, // 100 1000 10000
     '--api': String, // lite, tonhub
     '--bin': String, // cuda, opencl or path to miner
     '--gpu': Number, // gpu id, default 0
@@ -39,7 +40,27 @@ const args = (0, arg_1.default)({
     '--allow-shards': Boolean, // if true - allows mining to other shards
     '-c': String, // blockchain config
 });
-
+let givers = givers_1.givers1000;
+if (args['--givers']) {
+    const val = args['--givers'];
+    const allowed = [100, 1000];
+    if (!allowed.includes(val)) {
+        throw new Error('Invalid --givers argument');
+    }
+    switch (val) {
+        case 100:
+            givers = givers_1.givers100;
+            console.log('Using givers 100');
+            break;
+        case 1000:
+            givers = givers_1.givers1000;
+            console.log('Using givers 1 000');
+            break;
+    }
+}
+else {
+    console.log('Using givers 1 000');
+}
 let bin = '.\\pow-miner-cuda.exe';
 if (args['--bin']) {
     const argBin = args['--bin'];
@@ -61,8 +82,27 @@ console.log('Using GPU', gpu);
 console.log('Using timeout', timeout);
 const mySeed = process.env.SEED;
 const totalDiff = BigInt('115792089237277217110272752943501742914102634520085823245724998868298727686144');
-const bestGiver = { address: args['--givers'], coins: 1000 };
-
+const envAddress = process.env.TARGET_ADDRESS;
+let TARGET_ADDRESS = undefined;
+if (envAddress) {
+    try {
+        TARGET_ADDRESS = core_1.Address.parse(envAddress).toString({ urlSafe: true, bounceable: false });
+    }
+    catch (e) {
+        console.log('Couldnt parse target address');
+        process.exit(1);
+    }
+}
+let bestGiver = { address: '', coins: 0 };
+function updateBestGivers(liteClient, myAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const giver = givers[Math.floor(Math.random() * givers.length)];
+        bestGiver = {
+            address: giver.address,
+            coins: giver.reward,
+        };
+    });
+}
 function getPowInfo(liteClient, address) {
     return __awaiter(this, void 0, void 0, function* () {
         if (liteClient instanceof ton_1.TonClient4) {
@@ -106,6 +146,13 @@ let lastMinedSeed = BigInt(0);
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        const minerOk = yield testMiner();
+        if (!minerOk) {
+            console.log('Your miner is not working');
+            console.log('Check if you use correct bin (cuda, amd).');
+            console.log('If it doesn\'t help, try to run test_cuda or test_opencl script, to find out issue');
+            process.exit(1);
+        }
         let liteClient;
         if (!args['--api']) {
             console.log('Using TonHub API');
@@ -136,16 +183,30 @@ function main() {
         else {
             console.log('Using v4r2 wallet', wallet.address.toString({ bounceable: false, urlSafe: true }));
         }
+        const targetAddress = TARGET_ADDRESS !== null && TARGET_ADDRESS !== void 0 ? TARGET_ADDRESS : wallet.address.toString({ bounceable: false, urlSafe: true });
+        console.log('Target address:', targetAddress);
+        try {
+            yield updateBestGivers(liteClient, wallet.address);
+        }
+        catch (e) {
+            console.log('error', e);
+            throw Error('no givers');
+        }
+        setInterval(() => {
+            updateBestGivers(liteClient, wallet.address);
+        }, 5000);
         while (go) {
             const giverAddress = bestGiver.address;
             const [seed, complexity, iterations] = yield getPowInfo(liteClient, core_1.Address.parse(giverAddress));
             if (seed === lastMinedSeed) {
+                // console.log('Wating for a new seed')
+                updateBestGivers(liteClient, wallet.address);
                 yield delay(200);
                 continue;
             }
             const randomName = (yield (0, crypto_1.getSecureRandomBytes)(8)).toString('hex') + '.boc';
             const path = `bocs/${randomName}`;
-            const command = `${bin} -g ${gpu} -F 128 -t ${timeout} ${wallet.address.toString({ urlSafe: true, bounceable: true })} ${seed} ${complexity} ${iterations} ${giverAddress} ${path}`;
+            const command = `${bin} -g ${gpu} -F 128 -t ${timeout} ${targetAddress} ${seed} ${complexity} ${iterations} ${giverAddress} ${path}`;
             try {
                 const output = (0, child_process_1.execSync)(command, { encoding: 'utf-8', stdio: "pipe" }); // the default is 'buffer'
             }
@@ -267,6 +328,30 @@ function sendMinedBoc(wallet, seqno, keyPair, giverAddress, boc) {
                 }
             }
         }
+    });
+}
+function testMiner() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const randomName = (yield (0, crypto_1.getSecureRandomBytes)(8)).toString('hex') + '.boc';
+        const path = `bocs/${randomName}`;
+        const command = `${bin} -g ${gpu} -F 128 -t ${timeout} kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498400000000000 10000000000 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 ${path}`;
+        try {
+            const output = (0, child_process_1.execSync)(command, { encoding: 'utf-8', stdio: "pipe" }); // the default is 'buffer'
+        }
+        catch (e) {
+        }
+        let mined = undefined;
+        try {
+            mined = fs_1.default.readFileSync(path);
+            fs_1.default.rmSync(path);
+        }
+        catch (e) {
+            //
+        }
+        if (!mined) {
+            return false;
+        }
+        return true;
     });
 }
 // Function to call ton api untill we get response.
