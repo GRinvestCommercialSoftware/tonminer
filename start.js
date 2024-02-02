@@ -20,7 +20,7 @@ const gpuCount = output.trim().split('\n').length;
 console.log(`Количество GPU в системе: ${gpuCount}`);
 
 function runProcess(gpuIndex) {
-    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${givers.givers1000[gpuIndex]} --timeout 60 --gpu ${gpuIndex}`;
+    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${givers.givers1000[gpuIndex].address} --timeout 60 --gpu ${gpuIndex}`;
     const childProcess = spawn(command, { shell: true });
 
     childProcess.stdout.on('data', (data) => {
