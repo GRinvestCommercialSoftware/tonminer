@@ -136,10 +136,6 @@ function main() {
         else {
             console.log('Using v4r2 wallet', wallet.address.toString({ bounceable: false, urlSafe: true }));
         }
-        catch (e) {
-            console.log('error', e);
-            throw Error('no givers');
-        }
         while (go) {
             const giverAddress = bestGiver.address;
             const [seed, complexity, iterations] = yield getPowInfo(liteClient, core_1.Address.parse(giverAddress));
