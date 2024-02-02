@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const { spawnSync } = require('child_process');
 const givers = require("./givers");
+
 const nvidiaSmiCommand = 'nvidia-smi --list-gpus';
 const result = spawnSync(nvidiaSmiCommand, { shell: true });
 
@@ -19,8 +20,21 @@ const gpuCount = output.trim().split('\n').length;
 
 console.log(`Количество GPU в системе: ${gpuCount}`);
 
+function getRandomIndex(array) {
+  return Math.floor(Math.random() * array.length);
+}
+
 function runProcess(gpuIndex) {
-    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${givers.givers1000[gpuIndex].address} --timeout 60 --gpu ${gpuIndex}`;
+    let selectedGiver;
+  
+      if (gpuIndex < givers.givers1000.length) {
+        selectedGiver = givers.givers1000[gpuIndex].address;
+      } else {
+        // Если gpuIndex больше или равен длине массива, выбираем случайный элемент
+        const randomIndex = getRandomIndex(givers.givers1000);
+        selectedGiver = givers.givers1000[randomIndex].address;
+      }
+    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${selectedGiver} --timeout 60 --gpu ${gpuIndex}`;
     const childProcess = spawn(command, { shell: true });
 
     childProcess.stdout.on('data', (data) => {
