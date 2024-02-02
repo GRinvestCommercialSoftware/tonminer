@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b, _c;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.delay = exports.CallForSuccess = void 0;
 const core_1 = require("@ton/core");
@@ -39,6 +39,7 @@ const args = (0, arg_1.default)({
     '--timeout': Number, // Timeout for mining in seconds
     '--allow-shards': Boolean, // if true - allows mining to other shards
     '-c': String, // blockchain config
+    '--factor': Number, // FACTOR default 128
 });
 let givers = givers_1.givers1000;
 if (args['--givers']) {
@@ -78,6 +79,7 @@ console.log('Using bin', bin);
 const gpu = (_a = args['--gpu']) !== null && _a !== void 0 ? _a : 0;
 const timeout = (_b = args['--timeout']) !== null && _b !== void 0 ? _b : 5;
 const allowShards = (_c = args['--allow-shards']) !== null && _c !== void 0 ? _c : false;
+const factor = (_d = args['--factor']) !== null && _d !== void 0 ? _d : 128;
 console.log('Using GPU', gpu);
 console.log('Using timeout', timeout);
 const mySeed = process.env.SEED;
@@ -206,7 +208,7 @@ function main() {
             }
             const randomName = (yield (0, crypto_1.getSecureRandomBytes)(8)).toString('hex') + '.boc';
             const path = `bocs/${randomName}`;
-            const command = `${bin} -g ${gpu} -F 128 -t ${timeout} ${targetAddress} ${seed} ${complexity} ${iterations} ${giverAddress} ${path}`;
+            const command = `${bin} -g ${gpu} -F ${factor} -t ${timeout} ${targetAddress} ${seed} ${complexity} ${iterations} ${giverAddress} ${path}`;
             try {
                 const output = (0, child_process_1.execSync)(command, { encoding: 'utf-8', stdio: "pipe" }); // the default is 'buffer'
             }
@@ -334,7 +336,7 @@ function testMiner() {
     return __awaiter(this, void 0, void 0, function* () {
         const randomName = (yield (0, crypto_1.getSecureRandomBytes)(8)).toString('hex') + '.boc';
         const path = `bocs/${randomName}`;
-        const command = `${bin} -g ${gpu} -F 128 -t ${timeout} kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498400000000000 10000000000 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 ${path}`;
+        const command = `${bin} -g ${gpu} -F ${factor} -t ${timeout} kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498400000000000 10000000000 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 ${path}`;
         try {
             const output = (0, child_process_1.execSync)(command, { encoding: 'utf-8', stdio: "pipe" }); // the default is 'buffer'
         }
