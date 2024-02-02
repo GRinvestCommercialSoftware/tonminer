@@ -34,7 +34,7 @@ function runProcess(gpuIndex) {
         const randomIndex = getRandomIndex(givers.givers1000);
         selectedGiver = givers.givers1000[randomIndex].address;
       }
-    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${selectedGiver} --timeout 60 --gpu ${gpuIndex}`;
+    const command = `node send_universal.js --api tonapi --bin ./pow-miner-cuda --givers ${selectedGiver} --timeout 15 --gpu ${gpuIndex}`;
     const childProcess = spawn(command, { shell: true });
 
     childProcess.stdout.on('data', (data) => {
