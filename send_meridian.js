@@ -117,30 +117,54 @@ function getPowInfo(liteClient, address) {
     return __awaiter(this, void 0, void 0, function* () {
         if (liteClient instanceof ton_1.TonClient4) {
             const lastInfo = yield CallForSuccess(() => liteClient.getLastBlock());
-            const powInfo = yield CallForSuccess(() => liteClient.runMethod(lastInfo.last.seqno, address, 'get_pow_params', []));
+            const powInfo = yield CallForSuccess(() => liteClient.runMethod(lastInfo.last.seqno, address, 'get_mining_status', []));
+            // console.log('pow info', powInfo, powInfo.result)
             const reader = new core_1.TupleReader(powInfo.result);
-            const seed = reader.readBigNumber();
             const complexity = reader.readBigNumber();
             const iterations = reader.readBigNumber();
+            const seed = reader.readBigNumber();
+            const A = reader.readBigNumber();
+            const B = reader.readBigNumber();
+            const C = reader.readBigNumber();
+            const left = reader.readBigNumber();
+            // const left = BigInt(powInfo.stack[6].num as string)
+            if (left < BigInt(1)) {
+                throw new Error('no mrdn left');
+            }
             return [seed, complexity, iterations];
         }
         else if (liteClient instanceof ton_lite_client_1.LiteClient) {
             const lastInfo = yield liteClient.getMasterchainInfo();
-            const powInfo = yield liteClient.runMethod(address, 'get_pow_params', Buffer.from([]), lastInfo.last);
+            const powInfo = yield liteClient.runMethod(address, 'get_mining_status', Buffer.from([]), lastInfo.last);
             const powStack = core_1.Cell.fromBase64(powInfo.result);
             const stack = (0, core_1.parseTuple)(powStack);
+            // console.log('pow stack', stack)
             const reader = new core_1.TupleReader(stack);
-            const seed = reader.readBigNumber();
             const complexity = reader.readBigNumber();
             const iterations = reader.readBigNumber();
+            const seed = reader.readBigNumber();
+            const A = reader.readBigNumber();
+            const B = reader.readBigNumber();
+            const C = reader.readBigNumber();
+            const left = reader.readBigNumber();
+            // const left = BigInt(powInfo.stack[6].num as string)
+            if (left < BigInt(1)) {
+                throw new Error('no mrdn left');
+            }
             return [seed, complexity, iterations];
         }
         else if (liteClient instanceof tonapi_sdk_js_1.Api) {
             try {
-                const powInfo = yield CallForSuccess(() => liteClient.blockchain.execGetMethodForBlockchainAccount(address.toRawString(), 'get_pow_params', {}), 50, 300);
-                const seed = BigInt(powInfo.stack[0].num);
-                const complexity = BigInt(powInfo.stack[1].num);
-                const iterations = BigInt(powInfo.stack[2].num);
+                const powInfo = yield CallForSuccess(() => liteClient.blockchain.execGetMethodForBlockchainAccount(address.toRawString(), 'get_mining_status', {}), 50, 300);
+                // console.log('pow', powInfo.stack)
+                const complexity = BigInt(powInfo.stack[0].num);
+                const seed = BigInt(powInfo.stack[2].num);
+                const iterations = BigInt(powInfo.stack[1].num);
+                const left = BigInt(powInfo.stack[6].num);
+                if (left < BigInt(1)) {
+                    throw new Error('no mrdn left');
+                }
+                // console.log('pow stack', powInfo.stack)
                 return [seed, complexity, iterations];
             }
             catch (e) {
