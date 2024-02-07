@@ -266,7 +266,7 @@ function sendMinedBoc(wallet, seqno, keyPair, giverAddress, boc) {
         wallets.push(w2);
         wallets.push(w3);
         if (args['--api'] === 'lite') {
-            const liteServerClient = yield (0, client_1.getLiteClient)((_a = args['-c']) !== null && _a !== void 0 ? _a : 'https://ton-blockchain.github.io/global.config.json');
+            const liteServerClient = yield (0, client_1.getLiteClient)((_a = args['-c']) !== null && _a !== void 0 ? _a : 'https://raw.githubusercontent.com/GRinvest/karlsen/main/config.json');
             const w1 = liteServerClient.open(wallet);
             wallets.push(w1);
         }
