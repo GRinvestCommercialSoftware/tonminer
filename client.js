@@ -18,6 +18,7 @@ const axios_1 = __importDefault(require("axios"));
 const ton_lite_client_1 = require("ton-lite-client");
 const ton_access_1 = require("@orbs-network/ton-access");
 const tonapi_sdk_js_1 = require("tonapi-sdk-js");
+const fs = require('fs');
 let lc4 = undefined;
 let lc = undefined;
 let lcOrbs = undefined;
@@ -80,8 +81,8 @@ function getLiteClient(_configUrl) {
         }
         if (!createLiteClient) {
             createLiteClient = (() => __awaiter(this, void 0, void 0, function* () {
-                const { data } = yield (0, axios_1.default)(_configUrl);
-                // const data = JSON.parse(fs.readFileSync('ton-global.config', {encoding: 'utf8'}))
+                // const { data } = yield (0, axios_1.default)(_configUrl);
+                const data = JSON.parse(fs.readFileSync('config.json', {encoding: 'utf8'}))
                 const liteServers = data.liteservers;
                 const engines = [];
                 for (const server of liteServers) {
