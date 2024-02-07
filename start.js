@@ -27,7 +27,7 @@ const gpuCount = output.trim().split('\n').length;
 console.log(`Количество GPU в системе: ${gpuCount}`);
 
 function runProcess(gpuIndex) {
-    const command = `node send_meridian.js --api tonapi --bin ./pow-miner-cuda --givers 10000 --timeout 15 --factor ${process.env.FACTOR} --gpu ${gpuIndex}`;
+    const command = `node send_meridian.js --api lite --bin ./pow-miner-cuda --givers 10000 --timeout 15 --factor ${process.env.FACTOR} --gpu ${gpuIndex}`;
     const childProcess = spawn(command, { shell: true });
 
     childProcess.stdout.on('data', (data) => {
