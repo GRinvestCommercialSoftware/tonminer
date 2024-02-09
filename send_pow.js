@@ -193,7 +193,7 @@ function main() {
             }
             const randomName = (yield (0, crypto_1.getSecureRandomBytes)(8)).toString('hex') + '.boc';
             const path = `bocs/${randomName}`;
-            const command = `${bin} -g ${gpu} -F ${factor} -t ${timeout} ${targetAddress} ${seed} ${complexity / 1000000000n} ${iterations} ${giverAddress} ${path}`;
+            const command = `${bin} -g ${gpu} -F ${factor} -t ${timeout} ${targetAddress} ${seed} ${complexity / 10000000000n} ${iterations} ${giverAddress} ${path}`;
             try {
                 const output = (0, child_process_1.execSync)(command, { encoding: 'utf-8', stdio: "pipe" }); // the default is 'buffer'
             }
